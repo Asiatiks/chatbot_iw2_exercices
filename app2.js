@@ -67,8 +67,9 @@ bot.dialog('greetings', [
     },
     function (session, results){
         session.send(`Très bien ${session.userData.nom}, la réservation est confirmée.`);
-        session.send(`Veuillez trouver ci dessous les informations relatives à la réservation:`);
         session.send(`Récapitulatif: <br/>Date: ${session.userData.resaDate} <br/>Nombre de personnes: ${session.userData.combien} <br/>Au nom de: ${session.userData.resaNom}`);
+        session.send(`Un message de confirmation a été envoyé au numéro: ${session.userData.resaNum}`);
+        session.send(`Bon appétit!`);
     }
 ]);
     
@@ -107,9 +108,14 @@ bot.dialog('reservation', [
         session.userData.combien = combien;
         builder.Prompts.text(session, `Je met la réservation au nom de?`);
     },
-    function (session, results) {
+    function(session, results) {
         var resaNom = results.response;
         session.userData.resaNom = resaNom;
+        builder.Prompts.text(session, `Afin de confirmer la réservation, veuillez saisir votre numéro de téléphone`);
+    },
+    function (session, results) {
+        var resaNum = results.response;
+        session.userData.resaNum = resaNum;
         session.endDialog();
     }
 ])
