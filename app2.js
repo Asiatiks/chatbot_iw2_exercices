@@ -24,8 +24,8 @@ var bot = new builder.UniversalBot(connector, [
 ]);
 
 var menuItems = {
-    "Greetings": {
-        item: "greetings"
+    "Ask Name": {
+        item: "askName"
     },
     "Reservation": {
         item: "reservation"
@@ -47,13 +47,21 @@ bot.dialog('mainMenu', [
     confirmPrompt: "Vous allez perdre la progression actuelle. En êtes-vous sûr?"
 });
 
+bot.dialog('askName', [
+    function (session) {
+        builder.Prompts.text(session, `Comment vous appelez-vous?`);
+    },
+    function (session, results) {
+        var nom = results.response;
+        session.userData.nom = nom;
+        session.endDialogWithResult(results);
+        session.beginDialog('greetings');
+    }
+]);
 
 
 bot.dialog('greetings', [
-    function (session) {
-        session.beginDialog('askName');
-    },
-    function (session, results){
+    function (session){
         session.send(`Bonjour ${session.userData.nom} .`);
         session.beginDialog('reservation');
     },
@@ -64,16 +72,24 @@ bot.dialog('greetings', [
     }
 ]);
     
-bot.dialog('askName', [
-    function (session) {
-        builder.Prompts.text(session, `Comment vous appelez-vous?`);
+
+var tablesResas = {
+    "Table pour 2": {
+        item: "Table pour 2"
     },
-    function (session, results) {
-        var nom = results.response;
-        session.userData.nom = nom;
-        session.endDialogWithResult(results);
+    "Table pour 4": {
+        item: "Table pour 4"
+    },
+    "Table pour 6": {
+        item: "Table pour 6"
+    },
+    "Table pour 8": {
+        item: "Table pour 8"
+    },
+    "Table pour 10": {
+        item: "Table pour 10"
     }
-]);
+}
 
 bot.dialog('reservation', [
     function (session) {
@@ -82,10 +98,12 @@ bot.dialog('reservation', [
     function (session, results) {
         var resaDate = results.response;
         session.userData.resaDate = resaDate;
-        builder.Prompts.choice(session, `Tables disponibles: `, [`Table pour 2`,`Table pour 4`,`Table pour 6`,`Table pour 10`], { listStyle: 3 });
+        builder.Prompts.choice(session, `Tables disponibles: `, tablesResas, { listStyle: 3 });
     },
     function (session, results) {
-        var combien = results.response;
+        if(results.response) {
+            var combien = tablesResas[results.response.entity].item;
+        }
         session.userData.combien = combien;
         builder.Prompts.text(session, `Je met la réservation au nom de?`);
     },
